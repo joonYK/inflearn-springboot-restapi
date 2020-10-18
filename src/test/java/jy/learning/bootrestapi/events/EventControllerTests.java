@@ -2,8 +2,6 @@ package jy.learning.bootrestapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jy.learning.bootrestapi.common.TestDescription;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +57,11 @@ public class EventControllerTests {
                 .andExpect(header().string("Content-Type", MediaTypes.HAL_JSON_VALUE))
                 .andExpect(jsonPath("free").value(false))
                 .andExpect(jsonPath("offline").value(true))
-                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()));
+                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.query-events").exists())
+                .andExpect(jsonPath("_links.update-event").exists())
+            ;
     }
 
     @Test
