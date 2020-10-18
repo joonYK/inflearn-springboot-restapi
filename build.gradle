@@ -29,12 +29,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     compileOnly 'org.postgresql:postgresql'
+    compileOnly 'org.modelmapper:modelmapper:2.3.8'
     annotationProcessor 'org.projectlombok:lombok'
-    compileOnly 'com.h2database:h2'
+    implementation 'com.h2database:h2'
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testCompile 'org.modelmapper:modelmapper:2.3.8'
 }
 
 test {
