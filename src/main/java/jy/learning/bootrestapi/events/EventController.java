@@ -2,12 +2,18 @@ package jy.learning.bootrestapi.events;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,5 +56,13 @@ public class EventController {
         entityModel.add(selfLinkBuilder.withRel("update-event"));
 
         return ResponseEntity.created(createdUri).body(entityModel);
+    }
+
+    @GetMapping
+    public ResponseEntity queryEvents(Pageable pageable, PagedResourcesAssembler<Event> assembler) {
+        Page<Event> page = this.eventRepository.findAll(pageable);
+        PagedModel<EntityModel<Event>> pagedModel = assembler.toModel(page, FactoryEntityModel::eventEntityModel);
+        pagedModel.add(Link.of("/docs/index.html#resources-events-list").withRel("profile"));
+        return ResponseEntity.ok(pagedModel);
     }
 }
