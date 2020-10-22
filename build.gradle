@@ -30,7 +30,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
-    compileOnly 'mysql:mysql-connector-java'
+    compile 'mysql:mysql-connector-java'
     compileOnly 'org.modelmapper:modelmapper:2.3.8'
     annotationProcessor 'org.projectlombok:lombok'
     testCompile 'com.h2database:h2'
