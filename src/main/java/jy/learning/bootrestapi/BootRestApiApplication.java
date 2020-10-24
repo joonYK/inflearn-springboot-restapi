@@ -12,9 +12,5 @@ public class BootRestApiApplication {
         SpringApplication.run(BootRestApiApplication.class, args);
     }
 
-    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
 
 }
