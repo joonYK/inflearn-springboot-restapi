@@ -1,5 +1,6 @@
 package jy.learning.bootrestapi.events;
 
+import jy.learning.bootrestapi.accounts.Account;
 import lombok.*;
 
 import javax.persistence.*;
@@ -27,6 +28,8 @@ public class Event {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
+    @ManyToOne
+    private Account manager;
 
     public void update() {
         this.free = this.basePrice == 0 && this.maxPrice == 0;
