@@ -37,14 +37,10 @@ public class AppConfig {
 
             @Override
             public void run(ApplicationArguments args) throws Exception {
-                Set<AccountRole> roles = new HashSet<>();
-                roles.add(AccountRole.ADMIN);
-                roles.add(AccountRole.USER);
-
                 Account account = Account.builder()
                         .email("joonyeop@email.com")
                         .password("1234")
-                        .roles(roles)
+                        .roles(AccountRole.makeSetRoles(AccountRole.ADMIN, AccountRole.USER))
                         .build();
 
                 accountService.saveAccount(account);
