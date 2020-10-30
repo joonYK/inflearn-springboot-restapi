@@ -1,8 +1,10 @@
 package jy.learning.bootrestapi.configs;
 
 import jy.learning.bootrestapi.accounts.Account;
+import jy.learning.bootrestapi.accounts.AccountRepository;
 import jy.learning.bootrestapi.accounts.AccountRole;
 import jy.learning.bootrestapi.accounts.AccountService;
+import jy.learning.bootrestapi.common.AppProperties;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -35,15 +37,26 @@ public class AppConfig {
             @Autowired
             AccountService accountService;
 
+            @Autowired
+            AppProperties appProperties;
+
             @Override
             public void run(ApplicationArguments args) throws Exception {
-                Account account = Account.builder()
-                        .email("joonyeop@email.com")
-                        .password("1234")
+                Account admin = Account.builder()
+                        .email(appProperties.getAdminUsername())
+                        .password(appProperties.getAdminPassword())
                         .roles(AccountRole.makeSetRoles(AccountRole.ADMIN, AccountRole.USER))
                         .build();
 
-                accountService.saveAccount(account);
+                accountService.saveAccount(admin);
+
+                Account user = Account.builder()
+                        .email(appProperties.getUserUsername())
+                        .password(appProperties.getUserPassword())
+                        .roles(AccountRole.makeSetRoles(AccountRole.USER))
+                        .build();
+
+                accountService.saveAccount(user);
             }
         };
     }

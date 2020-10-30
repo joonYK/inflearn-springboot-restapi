@@ -1,6 +1,7 @@
 package jy.learning.bootrestapi.events;
 
 import jy.learning.bootrestapi.accounts.AccountService;
+import jy.learning.bootrestapi.common.AppProperties;
 import jy.learning.bootrestapi.common.BaseControllerTest;
 import jy.learning.bootrestapi.common.TestDescription;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,8 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -34,6 +36,9 @@ public class EventControllerTests extends BaseControllerTest {
 
     @Autowired
     AccountService accountService;
+
+    @Autowired
+    AppProperties appProperties;
 
     @Test
     @TestDescription("정상적으로 이벤트를 생성하는 테스트")
@@ -120,12 +125,12 @@ public class EventControllerTests extends BaseControllerTest {
         return "Bearer " + getAccessToken();
     }
 
-    private String getAccessToken() {
+    private String getAccessToken() throws Exception {
         //Given
-        String username = "joonyeop@email.com";
-        String password = "1234";
-        String clientId = "myApp";
-        String clientSecret = "pass";
+        String username = appProperties.getUserUsername();
+        String password = appProperties.getUserPassword();
+        String clientId = appProperties.getClientId();
+        String clientSecret = appProperties.getClientSecret();
 
         //when & then
         ResultActions perform = this.mockMvc.perform(post("/oauth/token")

@@ -3,6 +3,7 @@ package jy.learning.bootrestapi.configs;
 import jy.learning.bootrestapi.accounts.Account;
 import jy.learning.bootrestapi.accounts.AccountRole;
 import jy.learning.bootrestapi.accounts.AccountService;
+import jy.learning.bootrestapi.common.AppProperties;
 import jy.learning.bootrestapi.common.BaseControllerTest;
 import jy.learning.bootrestapi.common.TestDescription;
 import org.junit.jupiter.api.Test;
@@ -19,14 +20,17 @@ public class AuthServerConfigTest extends BaseControllerTest {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    AppProperties appProperties;
+
     @Test
     @TestDescription("인증 토큰을 발급 받는 테스트")
     public void getAuthToken() throws Exception {
         //Given
-        String username = "joonyeop@email.com";
-        String password = "1234";
-        String clientId = "myApp";
-        String clientSecret = "pass";
+        String username = appProperties.getUserUsername();
+        String password = appProperties.getUserPassword();
+        String clientId = appProperties.getClientId();
+        String clientSecret = appProperties.getClientSecret();
 
         //when & then
         this.mockMvc.perform(post("/oauth/token")
