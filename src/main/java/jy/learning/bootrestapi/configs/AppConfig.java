@@ -1,7 +1,6 @@
 package jy.learning.bootrestapi.configs;
 
 import jy.learning.bootrestapi.accounts.Account;
-import jy.learning.bootrestapi.accounts.AccountRepository;
 import jy.learning.bootrestapi.accounts.AccountRole;
 import jy.learning.bootrestapi.accounts.AccountService;
 import jy.learning.bootrestapi.common.AppProperties;
@@ -13,9 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Configuration
 public class AppConfig {
