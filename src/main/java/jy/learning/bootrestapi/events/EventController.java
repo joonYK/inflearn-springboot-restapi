@@ -36,7 +36,11 @@ public class EventController {
     private final EventValidator eventValidator;
 
     @PostMapping
-    public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
+    public ResponseEntity createEvent(
+            @RequestBody @Valid EventDto eventDto,
+            Errors errors,
+            @CurrentUser Account account
+    ) {
         if(errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
         }
@@ -48,6 +52,7 @@ public class EventController {
 
         Event event = modelMapper.map(eventDto, Event.class);
         event.update();
+        event.setManager(account);
         Event newEvent = this.eventRepository.save(event);
 
         WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
