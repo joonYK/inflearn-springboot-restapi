@@ -1,5 +1,8 @@
 package jy.learning.bootrestapi.events;
 
+import jy.learning.bootrestapi.accounts.Account;
+import jy.learning.bootrestapi.accounts.AccountRepository;
+import jy.learning.bootrestapi.accounts.AccountRole;
 import jy.learning.bootrestapi.accounts.AccountService;
 import jy.learning.bootrestapi.common.AppProperties;
 import jy.learning.bootrestapi.common.BaseControllerTest;
@@ -14,6 +17,7 @@ import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
@@ -38,6 +42,9 @@ public class EventControllerTests extends BaseControllerTest {
 
     @Autowired
     AppProperties appProperties;
+
+    @Autowired
+    AccountRepository accountRepository;
 
     @Test
     @TestDescription("정상적으로 이벤트를 생성하는 테스트")
@@ -121,21 +128,23 @@ public class EventControllerTests extends BaseControllerTest {
     }
 
     private String getBearerToken() throws Exception {
-        return "Bearer " + getAccessToken();
+        return "Bearer " + getAccessToken(false);
     }
 
-    private String getAccessToken() throws Exception {
+    private String getBearerToken(boolean needToCreateAccount) throws Exception {
+        return "Bearer " + getAccessToken(needToCreateAccount);
+    }
+
+    private String getAccessToken(boolean needToCreateAccount) throws Exception {
         //Given
-        String username = appProperties.getUserUsername();
-        String password = appProperties.getUserPassword();
-        String clientId = appProperties.getClientId();
-        String clientSecret = appProperties.getClientSecret();
+        if (needToCreateAccount)
+            createAccount();
 
         //when & then
         ResultActions perform = this.mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
-                .param("username", username)
-                .param("password", password)
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
+                .param("username", appProperties.getUserUsername())
+                .param("password", appProperties.getUserPassword())
                 .param("grant_type", "password")
         );
 
@@ -143,6 +152,17 @@ public class EventControllerTests extends BaseControllerTest {
         String responseBody = response.getContentAsString();
         Jackson2JsonParser jsonParser = new Jackson2JsonParser();
         return jsonParser.parseMap(responseBody).get("access_token").toString();
+    }
+
+    private Account createAccount() {
+        Account account = Account.builder()
+                .id(0)
+                .email(appProperties.getUserUsername())
+                .password(appProperties.getUserPassword())
+                .roles(AccountRole.makeSetRoles(AccountRole.ADMIN, AccountRole.USER))
+                .build();
+
+        return this.accountService.saveAccount(account);
     }
 
     @Test
@@ -260,31 +280,41 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    private Event generateEvent(int index) {
-        Event event = Event.builder()
-                .name("event " + index)
-                .description("test event")
-                .beginEnrollmentDateTime(LocalDateTime.of(2020, 10, 18, 12, 26))
-                .closeEnrollmentDateTime(LocalDateTime.of(2020, 10, 19, 12, 26))
-                .beginEventDateTime(LocalDateTime.of(2020, 10, 20, 12, 26))
-                .endEventDateTime(LocalDateTime.of(2020, 10, 21, 0, 26))
-                .basePrice(100)
-                .maxPrice(200)
-                .limitOfEnrollment(100)
-                .location("강남역 D2 스타텁 팩토리")
-                .free(false)
-                .offline(true)
-                .eventStatus(EventStatus.DRAFT)
-                .build();
-
+    private Event generateEvent(int index, Account account) {
+        Event event = buildEvent(index);
+        event.setManager(account);
         return this.eventRepository.save(event);
+    }
+
+    private Event generateEvent(int index) {
+        Event event = buildEvent(index);
+        return this.eventRepository.save(event);
+    }
+
+    private Event buildEvent(int index) {
+        return Event.builder()
+                    .name("event " + index)
+                    .description("test event")
+                    .beginEnrollmentDateTime(LocalDateTime.of(2020, 10, 18, 12, 26))
+                    .closeEnrollmentDateTime(LocalDateTime.of(2020, 10, 19, 12, 26))
+                    .beginEventDateTime(LocalDateTime.of(2020, 10, 20, 12, 26))
+                    .endEventDateTime(LocalDateTime.of(2020, 10, 21, 0, 26))
+                    .basePrice(100)
+                    .maxPrice(200)
+                    .limitOfEnrollment(100)
+                    .location("강남역 D2 스타텁 팩토리")
+                    .free(false)
+                    .offline(true)
+                    .eventStatus(EventStatus.DRAFT)
+                    .build();
     }
 
     @Test
     @TestDescription("기존의 이벤트를 하나 조회하기")
     public void getEvent() throws Exception {
         // Given
-        Event event = this.generateEvent(100);
+        Optional<Account> optional = accountRepository.findByEmail(appProperties.getUserUsername());
+        Event event = this.generateEvent(100, optional.orElse(null));
 
         // When & Then
         this.mockMvc.perform(get("/api/events/{id}", event.getId()))
@@ -303,14 +333,16 @@ public class EventControllerTests extends BaseControllerTest {
     @TestDescription("기존의 이벤트를 수정")
     public void updateEvent() throws Exception {
         // Given
-        Event event = this.generateEvent(100);
+        Optional<Account> optional = accountRepository.findByEmail(appProperties.getUserUsername());
+        Event event = this.generateEvent(100, optional.orElse(null));
+
         EventDto eventDto = this.modelMapper.map(event, EventDto.class);
         String eventName = "Updated Event";
         eventDto.setName(eventName);
 
         // When
         this.mockMvc.perform(put("/api/events/{id}", event.getId())
-                    .header(HttpHeaders.AUTHORIZATION, getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, getBearerToken(false))
                     .contentType(MediaTypes.HAL_JSON_VALUE)
                     .content(this.objectMapper.writeValueAsString(eventDto))
                 )
